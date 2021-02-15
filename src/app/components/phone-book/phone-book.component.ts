@@ -3,6 +3,7 @@ import {FormBuilder, FormGroup, Validators} from '@angular/forms';
 import {PhoneService} from '../../services/phone/phone.service';
 import {any} from 'codelyzer/util/function';
 import {Phone} from '../../models/Phone';
+import {isEmpty} from 'rxjs/operators';
 
 @Component({
   selector: 'app-phone-book',
@@ -18,12 +19,7 @@ export class PhoneBookComponent implements OnInit {
 
   ngOnInit(): void {
     this.buildForm();
-    this.phoneService.loadContact().subscribe((result) => {
-      this.phones = result;
-      result.map((phone) => {
-        console.log('lets seee ' + phone.name);
-      });
-    });
+    this.loadConacts();
   }
 
   // tslint:disable-next-line:typedef
@@ -33,16 +29,29 @@ export class PhoneBookComponent implements OnInit {
         Validators.maxLength(40)]]
     });
   }
+  // tslint:disable-next-line:typedef
+  loadConacts(){
+    this.phoneService.loadContact().subscribe((result) => {
+      this.phones = result;
+      result.map((phone) => {
+        console.log('lets seee ' + phone.name);
+      });
+    });
+  }
 
   // tslint:disable-next-line:typedef
   onSearch(){
     this.contactName = this.phoneForm.controls.contactName.value;
     console.log('Do you : ' + this.contactName);
-    this.phoneService.getContactDetails(this.contactName).subscribe((result) => {
-      console.log('Do you 2 : ' + result.name);
-      this.phones = [];
-      this.phones.push(result);
-    });
+    if (this.contactName) {
+      this.phoneService.getContactDetails(this.contactName).subscribe((result) => {
+        console.log('Do you 2 : ' + result.name);
+        this.phones = [];
+        this.phones.push(result);
+      });
+    }else {
+      this.loadConacts();
+    }
   }
 
 }
